@@ -14,6 +14,7 @@ consisting of a WordPress service with Apache and a MySQL database service.
   - [Environment Variables](#environment-variables)
   - [Persistence](#persistence)
   - [Networking](#networking)
+  - [Startup Order](#startup-order)
   - [Restart Behaviour](#restart-behaviour)
   - [Customization](#customization)
 - [Troubleshooting](#troubleshooting)
@@ -142,6 +143,25 @@ details into the repository.
 Only the `wordpress` service publishes a port to the host (`8080` by default).
 The database has **no** port mapping and is therefore not reachable from
 outside the stack — it is only accessible to containers on `wp_net`.
+
+### Startup Order
+
+WordPress requires the database to be *ready*, not merely *running*. On first
+startup MySQL initialises its data directory before it accepts connections,
+which takes noticeably longer than starting the container.
+
+The `db` service therefore defines a healthcheck, and `wordpress` waits for it:
+
+```yaml
+depends_on:
+  db:
+    condition: service_healthy
+```
+
+Compose holds the WordPress container back until `mysqladmin ping` succeeds
+inside the database container. Note that `condition: service_healthy` requires
+the referenced service to define a healthcheck — Compose aborts with an
+explicit error if it does not.
 
 ### Restart Behaviour
 
