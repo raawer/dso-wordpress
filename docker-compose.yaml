@@ -1,0 +1,36 @@
+services:
+
+  wordpress:
+    image: wordpress:php8.2-apache
+    restart: on-failure
+    ports:
+      - "${WP_PORT:-8080}:80"
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: ${DB_USER:?DB_USER is required in .env}
+      WORDPRESS_DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required in .env}
+    volumes:
+      - wordpress:/var/www/html
+    networks:
+      - wp_net
+
+  db:
+    image: mysql:8.4
+    restart: on-failure
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_RANDOM_ROOT_PASSWORD: "yes"
+      MYSQL_USER: ${DB_USER:?DB_USER is required in .env}
+      MYSQL_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD is required in .env}
+    volumes:
+      - db:/var/lib/mysql
+    networks:
+      - wp_net
+
+volumes:
+  wordpress:
+  db:
+
+networks:
+  wp_net:
