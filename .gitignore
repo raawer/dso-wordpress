@@ -3,4 +3,3 @@
 
 # env files
 .env*
-!.env.example   # safety net: some projects use this naming
